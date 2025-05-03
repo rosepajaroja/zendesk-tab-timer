@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Zendesk Inactive Tab Alert",
+  "version": "1.0",
+  "description": "Alerts you when Zendesk ticket tabs have been inactive for a set time.",
+  "permissions": [
+    "notifications",
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    "*://*.zendesk.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Zendesk Alert Timer",
+    "default_icon": {
+      "16": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.zendesk.com/*"],
+      "js": ["content.js"]
+    }
+  ]
+}

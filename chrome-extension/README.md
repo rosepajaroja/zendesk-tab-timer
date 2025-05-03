@@ -9,8 +9,6 @@ This Chrome Extension helps support agents stay on top of multiple Zendesk chats
 - ⏱️ Tracks inactivity per open Zendesk ticket tab
 - 🔴 Flashes the background of the inactive internal tab (red by default)
 - 🧠 Flashes the browser tab title with “🔴 Zendesk Alert!”
-- 🔔 Sends a **system-level notification** (if notifications are allowed)
-- Lightweight and optimized for Zendesk Agent Workspace
 
 ---
 

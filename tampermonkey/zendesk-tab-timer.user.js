@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Zendesk Inactive Tab Timer
+// @name         Zendesk Tab Timer
 // @namespace    http://tampermonkey.net/
 // @version      2.0
-// @description  Flash inactive Zendesk ticket tabs every 3 mins + track open time. Built by Rose Pajaroja with AI help.
+// @description  Shows timers on Zendesk tabs and flashes inactive tickets every 3 minutes
 // @author       Rose Pajaroja
 // @match        *://*.zendesk.com/*
 // @grant        none

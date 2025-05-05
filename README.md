@@ -34,6 +34,11 @@ A productivity-boosting tool for Zendesk to improve handling time.
 - Enable **Developer Mode**
 - Click **Load unpacked** and select the `chrome-extension` folder
 
+## 🔽 Download
+
+👉 [Download the Chrome Extension ZIP](https://github.com/rosepajaroja/zendesk-tab-timer/blob/main/chrome-extension/zendesk-tab-extension-v2.zip) 
+
+
 ### Tampermonkey Script
 - Install the [Tampermonkey extension](https://www.tampermonkey.net/)
 - Create a new user script

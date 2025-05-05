@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Zendesk Inactive Tab Timer
 // @namespace    http://tampermonkey.net/
-// @version      1.0
-// @description  Flashes Zendesk internal ticket tabs and browser tab if inactive for 3 minutes. No audio or notifications. Author: Rose Pajaroja
+// @version      2.0
+// @description  Flash inactive Zendesk ticket tabs every 3 mins + track open time. Built by Rose Pajaroja with AI help.
 // @author       Rose Pajaroja
 // @match        *://*.zendesk.com/*
 // @grant        none
@@ -28,13 +28,32 @@
     return Array.from(document.querySelectorAll('[role="tab"][data-entity-id]'));
   }
 
+  function ensureTimerDisplay(tab) {
+    tab.style.height = '60px';
+    tab.style.paddingTop = '3px';
+    tab.style.paddingBottom = '3px';
+
+    let timerEl = tab.querySelector(".zd-timer");
+    if (!timerEl) {
+      const subtitle = tab.querySelector('[data-test-id="header-tab-subtitle"]');
+      if (subtitle) {
+        timerEl = document.createElement("div");
+        timerEl.className = "zd-timer";
+        timerEl.style.cssText = "margin-top: 4px; font-size: 12px; font-family: Arial, sans-serif; font-weight: bold;";
+        subtitle.appendChild(document.createElement("br"));
+        subtitle.appendChild(timerEl);
+      }
+    }
+    return timerEl;
+  }
+
   function flashTab(tab) {
     const ticketId = tab.getAttribute("data-entity-id");
     if (flashers.has(ticketId)) return;
 
     let toggle = false;
     const interval = setInterval(() => {
-      if (!tab || !document.body.contains(tab)) {
+      if (!document.body.contains(tab)) {
         clearInterval(interval);
         flashers.delete(ticketId);
         return;
@@ -45,6 +64,16 @@
 
     flashers.set(ticketId, interval);
     startFlashingTitle();
+  }
+
+  function stopFlashing(ticketId) {
+    if (flashers.has(ticketId)) {
+      clearInterval(flashers.get(ticketId));
+      const tab = document.querySelector(`[role="tab"][data-entity-id="${ticketId}"]`);
+      if (tab) tab.style.backgroundColor = "";
+      flashers.delete(ticketId);
+    }
+    if (flashers.size === 0) stopFlashingTitle();
   }
 
   function startFlashingTitle() {
@@ -61,36 +90,33 @@
     isFlashing = false;
   }
 
-  function stopFlashing(ticketId) {
-    if (flashers.has(ticketId)) {
-      clearInterval(flashers.get(ticketId));
-      const tab = document.querySelector(`[role="tab"][data-entity-id="${ticketId}"]`);
-      if (tab) tab.style.backgroundColor = "";
-      flashers.delete(ticketId);
-    }
-
-    if (flashers.size === 0) {
-      stopFlashingTitle();
-    }
-  }
-
-  function startTimerForTab(tab) {
+  function startTimer(tab) {
     const ticketId = tab.getAttribute("data-entity-id");
     if (timers.has(ticketId)) return;
 
-    const timer = setTimeout(() => {
-      flashTab(tab);
-    }, TIMER_MINUTES * 60 * 1000);
-
-    timers.set(ticketId, timer);
+    const startTime = Date.now();
+    timers.set(ticketId, { startTime });
+    ensureTimerDisplay(tab);
   }
 
-  function resetTimerForTab(ticketId) {
-    if (timers.has(ticketId)) {
-      clearTimeout(timers.get(ticketId));
-      timers.delete(ticketId);
+  function updateTimerDisplays() {
+    const currentTicketId = extractTicketIdFromUrl();
+    for (const [ticketId, data] of timers.entries()) {
+      const tab = document.querySelector(`[role="tab"][data-entity-id="${ticketId}"]`);
+      if (!tab) continue;
+      const timerEl = tab.querySelector(".zd-timer");
+      if (!timerEl) continue;
+
+      const secondsElapsed = Math.floor((Date.now() - data.startTime) / 1000);
+      const minutes = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+      const seconds = String(secondsElapsed % 60).padStart(2, '0');
+      timerEl.textContent = `⏱ ${minutes}:${seconds}`;
+      timerEl.style.color = parseInt(minutes) >= 12 ? 'red' : parseInt(minutes) >= 10 ? 'orange' : 'green';
+
+      if (ticketId !== currentTicketId && secondsElapsed % (TIMER_MINUTES * 60) === 0) {
+        flashTab(tab);
+      }
     }
-    stopFlashing(ticketId);
   }
 
   function monitorTabs() {
@@ -99,16 +125,22 @@
 
     tabs.forEach(tab => {
       const tabId = tab.getAttribute("data-entity-id");
+      ensureTimerDisplay(tab);
 
       if (tabId === currentTicketId) {
-        resetTimerForTab(tabId);
-      } else {
-        startTimerForTab(tab);
+        stopFlashing(tabId);
+      }
+
+      if (!timers.has(tabId)) {
+        startTimer(tab);
       }
     });
   }
 
   window.addEventListener("load", () => {
-    setInterval(monitorTabs, CHECK_INTERVAL_MS);
+    setInterval(() => {
+      monitorTabs();
+      updateTimerDisplays();
+    }, CHECK_INTERVAL_MS);
   });
 })();

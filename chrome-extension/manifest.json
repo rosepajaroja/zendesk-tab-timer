@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Zendesk Tab Timer 2.0",
+  "name": "Zendesk Tab Timer",
   "version": "2.0",
   "description": "Shows a timer on each Zendesk ticket tab and flashes inactive ones every 3 minutes to help reduce response time and improve CSAT.",
   "permissions": [
